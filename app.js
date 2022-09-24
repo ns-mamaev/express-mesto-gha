@@ -10,6 +10,13 @@ const app = express();
 app.use(bodyParser.json());
 mongoose.connect('mongodb://localhost:27017/mestodb');
 
+app.use((req, res, next) => {
+  req.user = {
+    _id: '632f2f3f5711a4c311b6273a',
+  };
+
+  next();
+});
 app.use('/', cardsRouter);
 app.use('/', usersRouter);
 

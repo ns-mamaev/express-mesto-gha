@@ -18,3 +18,37 @@ module.exports.createUser = (req, res) => {
     .then(() => res.send('ЗБС'))
     .catch((err) => res.send(err.message));
 };
+
+module.exports.updateUserIfo = (req, res) => {
+  const { name, about } = req.body;
+  const { _id } = req.user;
+
+  User.findByIdAndUpdate(
+    _id,
+    { name, about },
+    {
+      new: true,
+      runValidators: true,
+      upsert: true,
+    },
+  )
+    .then((user) => res.send(user))
+    .catch((err) => console.log(err));
+};
+
+module.exports.updateUserAvatar = (req, res) => {
+  const { avatar } = req.body;
+  const { _id } = req.user;
+
+  User.findByIdAndUpdate(
+    _id,
+    { avatar },
+    {
+      new: true,
+      runValidators: true,
+      upsert: true,
+    },
+  )
+    .then((user) => res.send(user))
+    .catch((err) => console.log(err));
+};

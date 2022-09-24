@@ -2,7 +2,12 @@ const Card = require('../models/card');
 
 module.exports.getCards = (req, res) => {
   Card.find({})
-    .then((cards) => res.send(cards));
+    .populate([{
+      path: 'likes',
+      model: 'user',
+    }])
+    .then((cards) => res.send(cards))
+    .catch((err) => res.send({ error: err.message }));
 };
 
 module.exports.deleteCard = (req, res) => {

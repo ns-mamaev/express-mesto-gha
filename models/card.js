@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 
-const cardSchema = new mongoose.Schema({
+const { Schema } = mongoose;
+
+const cardSchema = new Schema({
   name: {
     type: String,
     required: true,
@@ -13,12 +15,12 @@ const cardSchema = new mongoose.Schema({
     minlength: 10,
   },
   owner: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: 'user',
     required: true,
   },
   likes: [{
-    type: mongoose.Schema.Types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: 'user',
     default: [],
   }],

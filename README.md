@@ -1,7 +1,8 @@
 [![Tests](https://github.com/ns-mamaev/express-mesto-gha/actions/workflows/tests-13-sprint.yml/badge.svg)](https://github.com/ns-mamaev/express-mesto-gha/actions/workflows/tests-13-sprint.yml) [![Tests](https://github.com/ns-mamaev/express-mesto-gha/actions/workflows/tests-14-sprint.yml/badge.svg)](https://github.com/ns-mamaev/express-mesto-gha/actions/workflows/tests-14-sprint.yml)
 # Проект Mesto бэкенд
 
-Серверная часть проекта Mesto. 
+Серверная часть проекта Mesto.
+Ссылка на репозиторий: https://github.com/ns-mamaev/express-mesto-gha
 
 ## Используемые технологии
 * Node.JS

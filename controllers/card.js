@@ -1,11 +1,10 @@
 const Card = require('../models/card');
 
-module.exports.getCards = (req, res) => {
+const LINK_WITH_USERS = [{ path: 'likes', model: 'user' }];
+
+module.exports.getCards = (_, res) => {
   Card.find({})
-    .populate([{
-      path: 'likes',
-      model: 'user',
-    }])
+    .populate(LINK_WITH_USERS)
     .then((cards) => res.send(cards))
     .catch((err) => res.status(500).send(err));
 };
@@ -57,6 +56,7 @@ const handleLikeCard = (req, res, options) => {
         { [action]: { likes: req.user._id } },
         { new: true },
       )
+        .populate(LINK_WITH_USERS)
         .then((newCard) => res.send(newCard))
         .catch((err) => res.status(500).send(err));
     })

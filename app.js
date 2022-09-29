@@ -19,6 +19,9 @@ app.use((req, res, next) => {
 });
 app.use('/', cardsRouter);
 app.use('/', usersRouter);
+app.use('*', (_, res) => {
+  res.send({ message: 'Ресурс не найден. Проверьте URL и метод запроса' });
+});
 
 app.listen(PORT, () => {
   console.log(`App listening at port ${PORT}`);

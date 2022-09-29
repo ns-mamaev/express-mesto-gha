@@ -10,7 +10,7 @@ module.exports.getUser = (req, res) => {
   User.findOne({ _id: req.params.id })
     .then((user) => {
       if (!user) {
-        res.status(404).send({ error: 'Пользователь с таким id не найден' });
+        res.status(404).send({ message: 'Пользователь с таким id не найден' });
         return;
       }
       res.send(user);

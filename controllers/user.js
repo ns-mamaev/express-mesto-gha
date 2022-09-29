@@ -1,6 +1,6 @@
 const User = require('../models/user');
 
-module.exports.getUsers = (req, res) => {
+module.exports.getUsers = (_, res) => {
   User.find({})
     .then((users) => res.send(users));
 };
@@ -8,7 +8,13 @@ module.exports.getUsers = (req, res) => {
 module.exports.getUser = (req, res) => {
   User.findOne({ _id: req.params.id })
     .then((user) => res.send(user))
-    .catch(() => res.send({ error: 'Пользователь с таким id не найден' }));
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        res.status(404).send({ error: 'Пользователь с таким id не найден' });
+        return;
+      }
+      res.status(500).send(err);
+    });
 };
 
 module.exports.createUser = (req, res) => {
@@ -16,7 +22,13 @@ module.exports.createUser = (req, res) => {
 
   User.create({ name, about, avatar })
     .then((user) => res.send(user))
-    .catch((err) => res.send(err.message));
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        res.status(400).send(err);
+        return;
+      }
+      res.status(500).send(err);
+    });
 };
 
 module.exports.updateUserIfo = (req, res) => {
@@ -25,10 +37,22 @@ module.exports.updateUserIfo = (req, res) => {
   User.findByIdAndUpdate(
     req.user._id,
     { name, about },
-    { new: true },
+    {
+      new: true,
+      runValidators: true,
+    },
   )
     .then((user) => res.send(user))
-    .catch((err) => res.send({ error: err.message }));
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        res.status(400).send(err);
+        return;
+      }
+      if (err.name === 'CastError') {
+        res.status(404).send({ error: 'Пользователь с таким id не найден' });
+      }
+      res.status(500).send(err);
+    });
 };
 
 module.exports.updateUserAvatar = (req, res) => {
@@ -37,8 +61,20 @@ module.exports.updateUserAvatar = (req, res) => {
   User.findByIdAndUpdate(
     req.user._id,
     { avatar },
-    { new: true },
+    {
+      new: true,
+      runValidators: true,
+    },
   )
     .then((user) => res.send(user))
-    .catch((err) => res.send({ error: err.message }));
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        res.status(400).send(err);
+        return;
+      }
+      if (err.name === 'CastError') {
+        res.status(404).send({ error: 'Пользователь с таким id не найден' });
+      }
+      res.status(500).send(err);
+    });
 };

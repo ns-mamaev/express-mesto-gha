@@ -99,3 +99,9 @@ module.exports.updateUser = (req, res) => {
       res.status(DEFAULT_ERROR_CODE).send(err);
     });
 };
+
+module.exports.getOwnProfile = (req, res) => {
+  User.findOne({ _id: req.user._id })
+    .then((user) => res.send(user))
+    .catch((err) => res.satatus(UNAUTHORIZED_ERROR_CODE).send({ message: err.message }));
+};

@@ -1,8 +1,10 @@
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 
 const {
   NOT_FOUND_ERROR_CODE,
+  UNAUTHORIZED_ERROR_CODE,
   INCORRECT_DATA_ERROR_CODE,
   DEFAULT_ERROR_CODE,
   SUCCESS_CREATED_CODE,
@@ -32,9 +34,17 @@ module.exports.getUser = (req, res) => {
     });
 };
 
-// module.exports.login = (req, res) => {
+module.exports.login = (req, res) => {
+  const { email, password } = req.body;
 
-// };
+  return User.findUser(email, password)
+    .then((user) => {
+      const token = jwt.sign({ _id: user._id }, 'secret-key', { expiresIn: '7d' });
+
+      res.send({ token });
+    })
+    .catch((err) => res.status(UNAUTHORIZED_ERROR_CODE).send({ message: err.message }));
+};
 
 module.exports.createUser = (req, res) => {
   const {

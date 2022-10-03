@@ -1,5 +1,6 @@
 const db = require('mongoose');
-const { URL_REGEXP } = require('../utills/constants');
+const bcrypt = require('bcrypt');
+const validator = require('validator');
 
 const userSchema = new db.Schema({
   name: {
@@ -18,14 +19,18 @@ const userSchema = new db.Schema({
     type: String,
     default: 'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
     validate: {
-      validator: (v) => URL_REGEXP.test(v),
-      message: ({ value }) => `${value} - некоректный адрес URL`,
+      validator: (v) => validator.isURL(v, { protocols: ['http', 'https'], require_protocol: true }),
+      message: ({ value }) => `${value} - некоректный адрес URL. Ожидается адрес в формате: http(s)://(www).site.com`,
     },
   },
   email: {
     type: String,
     required: true,
     unique: true,
+    validate: {
+      validator: (v) => validator.isEmail(v),
+      message: ({ value }) => `${value} - некорректный адрес email`,
+    },
   },
   password: {
     type: String,
@@ -34,4 +39,19 @@ const userSchema = new db.Schema({
   },
 });
 
+userSchema.statics.findUser = function (email, password) {
+  return this.findOne({ email })
+    .then((user) => {
+      if (!user) {
+        return Promise.reject(new Error('Неправильная почта или пароль'));
+      }
+      return bcrypt.compare(password, user.password)
+        .then((matched) => {
+          if (!matched) {
+            return Promise.reject(new Error('Неправильная почта или пароль'));
+          }
+          return user;
+        });
+    });
+};
 module.exports = db.model('user', userSchema);

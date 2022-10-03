@@ -1,7 +1,7 @@
-const mongoose = require('mongoose');
-const { URL_REGEXP } = require('../utills/constants');
+const db = require('mongoose');
+const validator = require('validator');
 
-const { Schema } = mongoose;
+const { Schema } = db;
 
 const cardSchema = new Schema({
   name: {
@@ -14,8 +14,8 @@ const cardSchema = new Schema({
     type: String,
     required: true,
     validate: {
-      validator: (v) => URL_REGEXP.test(v),
-      message: ({ value }) => `${value} - некоректный адрес URL`,
+      validator: (v) => validator.isURL(v, { protocols: ['http', 'https'], require_protocol: true }),
+      message: ({ value }) => `${value} - некоректный адрес URL. Ожидается адрес в формате: http(s)://(www).site.com`,
     },
   },
   owner: {
@@ -34,4 +34,4 @@ const cardSchema = new Schema({
   },
 });
 
-module.exports = mongoose.model('card', cardSchema);
+module.exports = db.model('card', cardSchema);

@@ -40,8 +40,12 @@ module.exports.login = (req, res) => {
   return User.findUser(email, password)
     .then((user) => {
       const token = jwt.sign({ _id: user._id }, 'secret-key', { expiresIn: '7d' });
-
-      res.send({ token });
+      res
+        .cookie('token', token, {
+          maxAge: 3600 * 24 * 7,
+          httpOnly: true,
+        })
+        .end();
     })
     .catch((err) => res.status(UNAUTHORIZED_ERROR_CODE).send({ message: err.message }));
 };

@@ -3,13 +3,11 @@ const { UNAUTHORIZED_ERROR_CODE } = require('../utills/constants');
 
 // eslint-disable-next-line consistent-return
 module.exports = (req, res, next) => {
-  const { authorization } = req.headers;
+  const { token } = req.cookies;
 
-  if (!authorization || !authorization.startsWith('Bearer ')) {
+  if (!token) {
     return res.status(UNAUTHORIZED_ERROR_CODE).send({ message: 'Необходима авторизация' });
   }
-
-  const token = authorization.replace('Bearer ', '');
   let payload;
 
   try {

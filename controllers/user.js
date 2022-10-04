@@ -46,31 +46,24 @@ module.exports.login = (req, res) => {
     .catch((err) => res.status(UNAUTHORIZED_ERROR_CODE).send({ message: err.message }));
 };
 
-module.exports.createUser = (req, res) => {
-  const {
-    name,
-    about,
-    avatar,
-    email,
-    password,
-  } = req.body;
-
-  bcrypt.hash(password, 10)
-    .then((hash) => User.create({
-      name,
-      about,
-      avatar,
-      email,
-      password: hash,
-    }))
-    .then((user) => res.status(SUCCESS_CREATED_CODE).send(user))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(INCORRECT_DATA_ERROR_CODE).send(err);
-        return;
-      }
-      res.status(DEFAULT_ERROR_CODE).send(err);
-    });
+module.exports.createUser = async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    const user = await User.findOne({ email });
+    if (user) {
+      res.status(UNAUTHORIZED_ERROR_CODE).send({ error: 'Пользователь с таким e-mail уже зарегистрирован' });
+      return;
+    }
+    const hash = await bcrypt.hash(password, 10);
+    const newUser = await User.create({ email, password: hash });
+    res.status(SUCCESS_CREATED_CODE).send(newUser);
+  } catch (err) {
+    if (err.name === 'ValidationError') {
+      res.status(INCORRECT_DATA_ERROR_CODE).send(err);
+      return;
+    }
+    res.status(DEFAULT_ERROR_CODE).send(err);
+  }
 };
 
 module.exports.updateUser = (req, res) => {

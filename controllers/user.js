@@ -1,40 +1,28 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
+const NotFoundError = require('../errors/notFoundError');
+const UnauthorizedError = require('../errors/unauthorizedError');
+const BadRequestError = require('../errors/badRequestError');
 
-const {
-  NOT_FOUND_ERROR_CODE,
-  UNAUTHORIZED_ERROR_CODE,
-  INCORRECT_DATA_ERROR_CODE,
-  DEFAULT_ERROR_CODE,
-  SUCCESS_CREATED_CODE,
-} = require('../utills/constants');
-
-module.exports.getUsers = (_, res) => {
+module.exports.getUsers = (_, res, next) => {
   User.find({})
     .then((users) => res.send(users))
-    .catch((err) => res.status(DEFAULT_ERROR_CODE).send(err));
+    .catch(next);
 };
 
-module.exports.getUser = (req, res) => {
+module.exports.getUser = (req, res, next) => {
   User.findOne({ _id: req.params.id })
     .then((user) => {
       if (!user) {
-        res.status(NOT_FOUND_ERROR_CODE).send({ message: 'Пользователь с таким id не найден' });
-        return;
+        throw new NotFoundError('Пользователь с таким id не найден');
       }
       res.send(user);
     })
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        res.status(INCORRECT_DATA_ERROR_CODE).send(err);
-        return;
-      }
-      res.status(DEFAULT_ERROR_CODE).send(err);
-    });
+    .catch(next);
 };
 
-module.exports.login = (req, res) => {
+module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
 
   return User.findUser(email, password)
@@ -47,32 +35,27 @@ module.exports.login = (req, res) => {
         })
         .end();
     })
-    .catch((err) => res.status(UNAUTHORIZED_ERROR_CODE).send({ message: err.message }));
+    .catch(next);
 };
 
-module.exports.createUser = async (req, res) => {
+module.exports.createUser = async (req, res, next) => {
   const { email, password } = req.body;
   try {
     const user = await User.findOne({ email });
     if (user) {
-      res.status(UNAUTHORIZED_ERROR_CODE).send({ error: 'Пользователь с таким e-mail уже зарегистрирован' });
-      return;
+      throw new UnauthorizedError('Пользователь с таким e-mail уже зарегистрирован');
     }
     const hash = await bcrypt.hash(password, 10);
     const newUser = await User.create({ email, password: hash });
-    res.status(SUCCESS_CREATED_CODE).send(newUser);
+    res.status(201).send(newUser);
   } catch (err) {
-    if (err.name === 'ValidationError') {
-      res.status(INCORRECT_DATA_ERROR_CODE).send(err);
-      return;
-    }
-    res.status(DEFAULT_ERROR_CODE).send(err);
+    next(err);
   }
 };
 
 module.exports.updateUser = (req, res) => {
   if (Object.keys(req.body).length === 0) {
-    res.status(INCORRECT_DATA_ERROR_CODE).send({ message: 'Передан пустой запрос' }); //  не делаю запрос к БД, если пришло пустое тело в запросе пользователя
+    res.status(400).send({ message: 'Передан пустой запрос' }); //  не делаю запрос к БД, если пришло пустое тело в запросе пользователя
     return;
   }
   User.findByIdAndUpdate(
@@ -86,19 +69,19 @@ module.exports.updateUser = (req, res) => {
     .then((user) => res.send(user))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(INCORRECT_DATA_ERROR_CODE).send(err);
+        res.status(400).send(err);
         return;
       }
       if (err.name === 'CastError') {
-        res.status(NOT_FOUND_ERROR_CODE).send({ error: 'Пользователь с таким id не найден' });
+        res.status(404).send({ error: 'Пользователь с таким id не найден' });
         return;
       }
-      res.status(DEFAULT_ERROR_CODE).send(err);
+      res.status(500).send(err);
     });
 };
 
 module.exports.getOwnProfile = (req, res) => {
   User.findOne({ _id: req.user._id })
     .then((user) => res.send(user))
-    .catch((err) => res.satatus(UNAUTHORIZED_ERROR_CODE).send({ message: err.message }));
+    .catch((err) => res.satatus(401).send({ message: err.message }));
 };

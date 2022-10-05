@@ -17,7 +17,6 @@ module.exports = (req, res, next) => {
   }
 
   req.user = payload;
-  console.log(req.user);
 
   next();
 };

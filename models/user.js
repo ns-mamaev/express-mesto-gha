@@ -40,7 +40,7 @@ const userSchema = new db.Schema({
     minlength: [8, 'минимальная длина пароля - 8 символов'],
     select: false,
   },
-});
+}, { toObject: { useProjection: true }, toJSON: { useProjection: true } });
 
 userSchema.statics.findUser = function (email, password) {
   return this.findOne({ email }).select('+password')

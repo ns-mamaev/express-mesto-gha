@@ -3,6 +3,8 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const { Joi, celebrate, errors } = require('celebrate');
+const helmet = require('helmet');
+const limiter = require('express-rate-limit');
 const cardsRouter = require('./routes/cardsRouter');
 const usersRouter = require('./routes/usersRouter');
 const auth = require('./middlewares/auth');
@@ -14,9 +16,14 @@ const { URL_REGEXP } = require('./utills/constants');
 const { PORT = 3000 } = process.env;
 
 const app = express();
+mongoose.connect('mongodb://localhost:27017/mestodb');
 app.use(bodyParser.json());
 app.use(cookieParser());
-mongoose.connect('mongodb://localhost:27017/mestodb');
+app.use(helmet());
+app.use(limiter({
+  windowMs: 10 * 60 * 1000,
+  max: 100,
+}));
 
 app.post('/signin', celebrate({
   body: Joi.object().keys({
@@ -33,7 +40,7 @@ app.post('/signup', celebrate({
     avatar: Joi.string().pattern(URL_REGEXP),
   }),
 }), createUser);
-app.use(auth);
+app.use(auth); // ниже защищенные роуты
 app.use('/cards', cardsRouter);
 app.use('/users', usersRouter);
 app.use('*', () => {

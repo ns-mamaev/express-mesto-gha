@@ -4,6 +4,7 @@ const User = require('../models/user');
 const NotFoundError = require('../errors/notFoundError');
 const ConflictError = require('../errors/conflictError');
 const BadRequestError = require('../errors/badRequestError');
+const { JWT_SECRET } = require('../utills/constants');
 
 module.exports.getUsers = (_, res, next) => {
   User.find({})
@@ -27,11 +28,12 @@ module.exports.login = (req, res, next) => {
 
   return User.findUser(email, password)
     .then((user) => {
-      const token = jwt.sign({ _id: user._id }, 'secret-key', { expiresIn: '7d' });
+      const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' });
       res
         .cookie('token', token, {
           maxAge: 3600 * 24 * 7,
           httpOnly: true,
+          sameSite: true,
         })
         .send({ email });
     })

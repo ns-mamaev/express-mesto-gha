@@ -6,7 +6,7 @@ const UnauthorizedError = require('../errors/unauthorizedError');
 const userSchema = new db.Schema({
   name: {
     type: String,
-    default: 'Жак-Ив-Кусто',
+    default: 'Жак-Ив Кусто',
     minlength: [2, 'поле должно содержать минимум 2 символа'],
     maxlength: [30, 'максимальная длина поля 30 символов'],
   },

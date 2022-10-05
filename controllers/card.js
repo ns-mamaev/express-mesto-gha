@@ -1,88 +1,64 @@
+const ForbiddenError = require('../errors/forbiddenError');
+const NotFoundError = require('../errors/notFoundError');
 const Card = require('../models/card');
-const {
-  NOT_FOUND_ERROR_CODE,
-  INCORRECT_DATA_ERROR_CODE,
-  DEFAULT_ERROR_CODE,
-  SUCCESS_CREATED_CODE,
-} = require('../utills/constants');
 
-const LINK_WITH_USERS = [{ path: 'likes', model: 'user' }];
+const linkWithUserModel = [
+  { path: 'likes', model: 'user' },
+  { path: 'owner', model: 'user' },
+];
 
-module.exports.getCards = (_, res) => {
+module.exports.getCards = (_, res, next) => {
   Card.find({})
-    .populate(LINK_WITH_USERS)
+    .populate(linkWithUserModel)
     .then((cards) => res.send(cards))
-    .catch((err) => res.status(DEFAULT_ERROR_CODE).send(err));
+    .catch(next);
 };
 
-module.exports.deleteCard = (req, res) => {
+module.exports.deleteCard = (req, res, next) => {
   Card.findById(req.params.cardId)
     .then((card) => {
       if (!card) {
-        res.status(NOT_FOUND_ERROR_CODE).send({ message: 'Пост с таким id не найден' });
-        return;
+        throw new NotFoundError('Пост с таким id не найден');
       }
       if (card.owner.toString() !== req.user._id) {
-        res.status(403).send({ message: 'Нельзя удалять чужие карточки' });
-        return;
+        throw new ForbiddenError('Нельзя удалять чужие карточки');
       }
-      Card.findByIdAndRemove(req.params.cardId)
-        .then(() => res.send({ message: 'Пост удалён' }))
-        .catch((err) => res.status(DEFAULT_ERROR_CODE).send(err));
+      return Card.findByIdAndRemove(req.params.cardId)
+        .then(() => res.send({ message: 'Пост удалён' }));
     })
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        res.status(INCORRECT_DATA_ERROR_CODE).send(err);
-        return;
-      }
-      res.status(DEFAULT_ERROR_CODE).send(err);
-    });
+    .catch(next);
 };
 
-module.exports.createCard = (req, res) => {
+module.exports.createCard = (req, res, next) => {
   const { name, link } = req.body;
 
   Card.create({ name, link, owner: req.user._id })
-    .then((card) => res.status(SUCCESS_CREATED_CODE).send(card))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(INCORRECT_DATA_ERROR_CODE).send(err);
-        return;
-      }
-      res.status(DEFAULT_ERROR_CODE).send(err);
-    });
+    .then((card) => res.status(201).send(card))
+    .catch(next);
 };
 
-const handleLikeCard = (req, res, options) => {
+const handleLikeCard = (req, res, next, options) => {
   const action = options.addLike ? '$addToSet' : '$pull';
   Card.findById(req.params.cardId)
     .then((card) => {
       if (!card) {
-        res.status(NOT_FOUND_ERROR_CODE).send({ message: 'Пост с таким id не найден' });
-        return;
+        throw new NotFoundError('Пост с таким id не найден');
       }
-      Card.findByIdAndUpdate(
+      return Card.findByIdAndUpdate(
         req.params.cardId,
         { [action]: { likes: req.user._id } },
         { new: true },
       )
-        .populate(LINK_WITH_USERS)
-        .then((newCard) => res.send(newCard))
-        .catch((err) => res.status(DEFAULT_ERROR_CODE).send(err));
+        .populate(linkWithUserModel)
+        .then((newCard) => res.send(newCard));
     })
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        res.status(INCORRECT_DATA_ERROR_CODE).send(err);
-        return;
-      }
-      res.status(DEFAULT_ERROR_CODE).send(err);
-    });
+    .catch(next);
 };
 
-module.exports.likeCard = (req, res) => {
-  handleLikeCard(req, res, { addLike: true });
+module.exports.likeCard = (req, res, next) => {
+  handleLikeCard(req, res, next, { addLike: true });
 };
 
-module.exports.dislikeCard = (req, res) => {
-  handleLikeCard(req, res, { addLike: false });
+module.exports.dislikeCard = (req, res, next) => {
+  handleLikeCard(req, res, next, { addLike: false });
 };

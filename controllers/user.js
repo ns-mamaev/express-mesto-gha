@@ -2,7 +2,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const NotFoundError = require('../errors/notFoundError');
-const UnauthorizedError = require('../errors/unauthorizedError');
+const ConflictError = require('../errors/conflictError');
 const BadRequestError = require('../errors/badRequestError');
 
 module.exports.getUsers = (_, res, next) => {
@@ -33,7 +33,7 @@ module.exports.login = (req, res, next) => {
           maxAge: 3600 * 24 * 7,
           httpOnly: true,
         })
-        .end();
+        .send({ email });
     })
     .catch(next);
 };
@@ -43,7 +43,7 @@ module.exports.createUser = async (req, res, next) => {
   try {
     const user = await User.findOne({ email });
     if (user) {
-      throw new UnauthorizedError('Пользователь с таким e-mail уже зарегистрирован');
+      throw new ConflictError('Пользователь с таким e-mail уже зарегистрирован');
     }
     const hash = await bcrypt.hash(password, 10);
     const newUser = await User.create({ email, password: hash });
@@ -53,10 +53,9 @@ module.exports.createUser = async (req, res, next) => {
   }
 };
 
-module.exports.updateUser = (req, res) => {
+module.exports.updateUser = (req, res, next) => {
   if (Object.keys(req.body).length === 0) {
-    res.status(400).send({ message: 'Передан пустой запрос' }); //  не делаю запрос к БД, если пришло пустое тело в запросе пользователя
-    return;
+    throw new BadRequestError('Передан пустой запрос'); //  не делаю запрос к БД, если пришло пустое тело в запросе пользователя
   }
   User.findByIdAndUpdate(
     req.user._id,
@@ -67,21 +66,11 @@ module.exports.updateUser = (req, res) => {
     },
   )
     .then((user) => res.send(user))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(400).send(err);
-        return;
-      }
-      if (err.name === 'CastError') {
-        res.status(404).send({ error: 'Пользователь с таким id не найден' });
-        return;
-      }
-      res.status(500).send(err);
-    });
+    .catch(next);
 };
 
-module.exports.getOwnProfile = (req, res) => {
+module.exports.getOwnProfile = (req, res, next) => {
   User.findOne({ _id: req.user._id })
     .then((user) => res.send(user))
-    .catch((err) => res.satatus(401).send({ message: err.message }));
+    .catch(next);
 };

@@ -9,7 +9,7 @@ const linkWithUserModel = [
 
 module.exports.getCards = (_, res, next) => {
   Card.find({})
-    // .populate(linkWithUserModel)
+    .populate(linkWithUserModel)
     .then((cards) => res.send(cards))
     .catch(next);
 };
@@ -49,7 +49,7 @@ const handleLikeCard = (req, res, next, options) => {
         { [action]: { likes: req.user._id } },
         { new: true },
       )
-        // .populate(linkWithUserModel)
+        .populate(linkWithUserModel)
         .then((newCard) => res.send(newCard));
     })
     .catch(next);

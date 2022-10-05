@@ -32,7 +32,6 @@ const userSchema = new db.Schema({
       validator: (v) => validator.isEmail(v),
       message: ({ value }) => `${value} - некорректный адрес email`,
     },
-    select: false,
   },
   password: {
     type: String,

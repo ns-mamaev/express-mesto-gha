@@ -5,13 +5,8 @@ const cookieParser = require('cookie-parser');
 const { errors } = require('celebrate');
 const helmet = require('helmet');
 const limiter = require('express-rate-limit');
-const cardsRouter = require('./routes/cardsRouter');
-const usersRouter = require('./routes/usersRouter');
-const auth = require('./middlewares/auth');
 const errorsHandler = require('./middlewares/errorsHandler');
-const { login, createUser, logout } = require('./controllers/user');
-const NotFoundError = require('./errors/notFoundError');
-const { validateLoginData, validateRegisterData } = require('./utills/validators/userValidators');
+const router = require('./routes');
 
 const { PORT = 3000 } = process.env;
 
@@ -24,16 +19,7 @@ app.use(limiter({
   windowMs: 10 * 60 * 1000,
   max: 100,
 }));
-
-app.post('/signin', validateLoginData, login);
-app.post('/signup', validateRegisterData, createUser);
-app.get('/signout', logout);
-app.use(auth); // ниже защищенные роуты
-app.use('/cards', cardsRouter);
-app.use('/users', usersRouter);
-app.use('*', () => {
-  throw new NotFoundError('Ресурс не найден. Проверьте URL и метод запроса');
-});
+app.use(router);
 app.use(errors());
 app.use(errorsHandler);
 

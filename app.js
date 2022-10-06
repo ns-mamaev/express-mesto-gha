@@ -2,7 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
-const { Joi, celebrate, errors } = require('celebrate');
+const { errors } = require('celebrate');
 const helmet = require('helmet');
 const limiter = require('express-rate-limit');
 const cardsRouter = require('./routes/cardsRouter');
@@ -11,7 +11,7 @@ const auth = require('./middlewares/auth');
 const errorsHandler = require('./middlewares/errorsHandler');
 const { login, createUser } = require('./controllers/user');
 const NotFoundError = require('./errors/notFoundError');
-const { URL_REGEXP } = require('./utills/constants');
+const { validateLoginData, validateRegisterData } = require('./utills/validators/userValidators');
 
 const { PORT = 3000 } = process.env;
 
@@ -25,25 +25,8 @@ app.use(limiter({
   max: 100,
 }));
 
-const signinSchema = {
-  body: Joi.object().keys({
-    email: Joi.string().required().email(),
-    password: Joi.string().required(),
-  }),
-};
-
-const signupSchema = {
-  body: Joi.object().keys({
-    email: Joi.string().required().email(),
-    password: Joi.string().required(),
-    name: Joi.string().min(2).max(30),
-    about: Joi.string().min(2).max(30),
-    avatar: Joi.string().pattern(URL_REGEXP),
-  }),
-};
-
-app.post('/signin', celebrate(signinSchema), login);
-app.post('/signup', celebrate(signupSchema), createUser);
+app.post('/signin', validateLoginData, login);
+app.post('/signup', validateRegisterData, createUser);
 app.use(auth); // ниже защищенные роуты
 app.use('/cards', cardsRouter);
 app.use('/users', usersRouter);

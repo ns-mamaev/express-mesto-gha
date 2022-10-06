@@ -41,17 +41,29 @@ module.exports.login = (req, res, next) => {
 };
 
 module.exports.createUser = async (req, res, next) => {
-  const { email, password } = req.body;
+  const {
+    email,
+    password,
+    name,
+    about,
+    avatar,
+  } = req.body;
   try {
-    const user = await User.findOne({ email });
-    if (user) {
-      throw new ConflictError('Пользователь с таким e-mail уже зарегистрирован');
-    }
     const hash = await bcrypt.hash(password, 10);
-    const newUser = await User.create({ ...req.body, password: hash });
+    const newUser = await User.create({
+      name,
+      about,
+      avatar,
+      email,
+      password: hash,
+    });
     res.status(201).send(newUser);
   } catch (err) {
-    next(err);
+    if (err.code === 11000) {
+      next(new ConflictError('Пользователь с данным email уже существует'));
+    } else {
+      next(err);
+    }
   }
 };
 

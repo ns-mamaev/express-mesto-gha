@@ -36,7 +36,6 @@ const userSchema = new db.Schema({
   password: {
     type: String,
     required: true,
-    minlength: [8, 'минимальная длина пароля - 8 символов'],
     select: false,
   },
 }, { toObject: { useProjection: true }, toJSON: { useProjection: true } });

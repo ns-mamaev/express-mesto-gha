@@ -14,7 +14,7 @@ router.use(auth); // ниже защищенные роуты
 router.use('/cards', cardsRouter);
 router.use('/users', usersRouter);
 router.get('/signout', logout);
-router.use('*', () => {
+router.use(() => {
   throw new NotFoundError('Ресурс не найден. Проверьте URL и метод запроса');
 });
 

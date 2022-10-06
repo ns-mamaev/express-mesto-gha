@@ -20,7 +20,13 @@ module.exports.getUser = (req, res, next) => {
       }
       res.send(user);
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        next(new BadRequestError('Некорректный формат id пользователя'));
+      } else {
+        next(err);
+      }
+    });
 };
 
 module.exports.login = (req, res, next) => {
@@ -37,7 +43,13 @@ module.exports.login = (req, res, next) => {
         })
         .send({ email });
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        next(new BadRequestError(err.message));
+      } else {
+        next(err);
+      }
+    });
 };
 
 module.exports.logout = (_, res) => {
@@ -83,7 +95,13 @@ const updateUser = (req, res, next, userData) => {
     },
   )
     .then((user) => res.send(user))
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        next(new BadRequestError(err.message));
+      } else {
+        next(err);
+      }
+    });
 };
 
 module.exports.updateUserInfo = (req, res, next) => {
@@ -95,7 +113,7 @@ module.exports.updateUserInfo = (req, res, next) => {
 };
 
 module.exports.updateUserAvatar = (req, res, next) => {
-  updateUser(req, res, next, { avatar: res.body.avatar });
+  updateUser(req, res, next, { avatar: req.body.avatar });
 };
 
 module.exports.getOwnProfile = (req, res, next) => {

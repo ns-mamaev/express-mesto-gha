@@ -4,7 +4,6 @@ const { JWT_SECRET } = require('../utills/constants');
 
 module.exports = (req, _, next) => {
   const { token } = req.cookies;
-
   if (!token) {
     throw new UnauthorizedError('Необходима авторизация');
   }

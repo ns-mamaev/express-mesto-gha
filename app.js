@@ -25,13 +25,14 @@ app.use(limiter({
   max: 100,
 }));
 
-app.post('/signin', celebrate({
+const signinSchema = {
   body: Joi.object().keys({
     email: Joi.string().required().email(),
     password: Joi.string().required().min(8),
   }),
-}), login);
-app.post('/signup', celebrate({
+};
+
+const signupSchema = {
   body: Joi.object().keys({
     email: Joi.string().required().email(),
     password: Joi.string().required().min(8),
@@ -39,7 +40,10 @@ app.post('/signup', celebrate({
     about: Joi.string().min(2).max(30),
     avatar: Joi.string().pattern(URL_REGEXP),
   }),
-}), createUser);
+};
+
+app.post('/signin', celebrate(signinSchema), login);
+app.post('/signup', celebrate(signupSchema), createUser);
 app.use(auth); // ниже защищенные роуты
 app.use('/cards', cardsRouter);
 app.use('/users', usersRouter);

@@ -61,19 +61,18 @@ module.exports.createUser = async (req, res, next) => {
   } catch (err) {
     if (err.code === 11000) {
       next(new ConflictError('Пользователь с данным email уже существует'));
+    } else if (err.name === 'ValidationError') {
+      next(new BadRequestError(err.message));
     } else {
       next(err);
     }
   }
 };
 
-module.exports.updateUser = (req, res, next) => {
-  if (Object.keys(req.body).length === 0) {
-    throw new BadRequestError('Передан пустой запрос'); //  не делаю запрос к БД, если пришло пустое тело в запросе пользователя
-  }
+const updateUser = (req, res, next, userData) => {
   User.findByIdAndUpdate(
     req.user._id,
-    req.body,
+    userData,
     {
       new: true,
       runValidators: true,
@@ -81,6 +80,18 @@ module.exports.updateUser = (req, res, next) => {
   )
     .then((user) => res.send(user))
     .catch(next);
+};
+
+module.exports.updateUserInfo = (req, res, next) => {
+  const userData = {
+    name: req.body.name,
+    about: req.body.about,
+  };
+  updateUser(req, res, next, userData);
+};
+
+module.exports.updateUserAvatar = (req, res, next) => {
+  updateUser(req, res, next, { avatar: res.body.avatar });
 };
 
 module.exports.getOwnProfile = (req, res, next) => {

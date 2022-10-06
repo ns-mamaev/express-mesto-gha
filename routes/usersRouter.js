@@ -5,7 +5,8 @@ const {
   getUsers,
   getOwnProfile,
   getUser,
-  updateUser,
+  updateUserAvatar,
+  updateUserInfo,
 } = require('../controllers/user');
 const { URL_REGEXP } = require('../utills/constants');
 
@@ -15,10 +16,15 @@ const userIdSchema = {
   }),
 };
 
-const userSchema = {
+const userInfoSchema = {
   body: Joi.object().keys({
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
+  }),
+};
+
+const userAvatarSchema = {
+  body: Joi.object().keys({
     avatar: Joi.string().pattern(URL_REGEXP),
   }),
 };
@@ -26,7 +32,7 @@ const userSchema = {
 userRouter.get('/', getUsers);
 userRouter.get('/me', getOwnProfile);
 userRouter.get('/:id', celebrate(userIdSchema), getUser);
-userRouter.patch('/me', celebrate(userSchema), updateUser);
-userRouter.patch('/me/avatar', celebrate(userSchema), updateUser);
+userRouter.patch('/me', celebrate(userInfoSchema), updateUserInfo);
+userRouter.patch('/me/avatar', celebrate(userAvatarSchema), updateUserAvatar);
 
 module.exports = userRouter;

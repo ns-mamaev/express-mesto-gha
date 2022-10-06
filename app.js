@@ -9,7 +9,7 @@ const cardsRouter = require('./routes/cardsRouter');
 const usersRouter = require('./routes/usersRouter');
 const auth = require('./middlewares/auth');
 const errorsHandler = require('./middlewares/errorsHandler');
-const { login, createUser } = require('./controllers/user');
+const { login, createUser, logout } = require('./controllers/user');
 const NotFoundError = require('./errors/notFoundError');
 const { validateLoginData, validateRegisterData } = require('./utills/validators/userValidators');
 
@@ -27,6 +27,7 @@ app.use(limiter({
 
 app.post('/signin', validateLoginData, login);
 app.post('/signup', validateRegisterData, createUser);
+app.get('/signout', logout);
 app.use(auth); // ниже защищенные роуты
 app.use('/cards', cardsRouter);
 app.use('/users', usersRouter);

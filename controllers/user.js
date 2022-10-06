@@ -40,6 +40,10 @@ module.exports.login = (req, res, next) => {
     .catch(next);
 };
 
+module.exports.logout = (_, res) => {
+  res.clearCookie('token').send({ message: 'Вы вышли из профиля' });
+};
+
 module.exports.createUser = async (req, res, next) => {
   const {
     email,

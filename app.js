@@ -7,6 +7,7 @@ const helmet = require('helmet');
 const limiter = require('express-rate-limit');
 const errorsHandler = require('./middlewares/errorsHandler');
 const router = require('./routes');
+const { errorLogger, requestLogger } = require('./middlewares/logger');
 
 const { PORT = 3000 } = process.env;
 
@@ -19,7 +20,9 @@ app.use(limiter({
   windowMs: 10 * 60 * 1000,
   max: 100,
 }));
+app.use(requestLogger);
 app.use(router);
+app.use(errorLogger);
 app.use(errors());
 app.use(errorsHandler);
 

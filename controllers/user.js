@@ -7,13 +7,13 @@ const BadRequestError = require('../errors/badRequestError');
 const { JWT_SECRET } = require('../utills/constants');
 
 module.exports.getUsers = (_, res, next) => {
-  User.find({})
+  User.find({}).select('+email')
     .then((users) => res.send(users))
     .catch(next);
 };
 
 module.exports.getUser = (req, res, next) => {
-  User.findOne({ _id: req.params.id })
+  User.findOne({ _id: req.params.id }).select('+email')
     .then((user) => {
       if (!user) {
         throw new NotFoundError('Пользователь с таким id не найден');
@@ -117,7 +117,7 @@ module.exports.updateUserAvatar = (req, res, next) => {
 };
 
 module.exports.getOwnProfile = (req, res, next) => {
-  User.findOne({ _id: req.user._id })
+  User.findOne({ _id: req.user._id }).select('+email')
     .then((user) => res.send(user))
     .catch(next);
 };

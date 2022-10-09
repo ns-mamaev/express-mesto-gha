@@ -33,13 +33,14 @@ const createTokenById = (id) => jwt.sign({ _id: id }, JWT_SECRET, { expiresIn: '
 
 const sendCookie = (res, { _id: id, email }) => {
   const token = createTokenById(id);
-  return res
-    .cookie('token', token, {
-      maxAge: 604800000,
-      httpOnly: true,
-      // sameSite: true,
-    })
-    .send({ email });
+  res.send({ id, token, email });
+  // return res
+  //   .cookie('token', token, {
+  //     maxAge: 604800000,
+  //     httpOnly: true,
+  //     sameSite: true,
+  //   })
+  //   .send({ email });
 };
 
 module.exports.login = (req, res, next) => {
@@ -47,7 +48,6 @@ module.exports.login = (req, res, next) => {
 
   return User.findUserByCredentials(email, password)
     .then((user) => {
-      console.log(user);
       sendCookie(res, user);
     })
     .catch((err) => {

@@ -41,8 +41,8 @@ const userSchema = new db.Schema({
   },
 }, { toObject: { useProjection: true }, toJSON: { useProjection: true } });
 
-userSchema.statics.findUser = function (email, password) {
-  return this.findOne({ email }).select('+password')
+userSchema.statics.findUserByCredentials = function (email, password) {
+  return this.findOne({ email }).select('+password +email')
     .then((user) => {
       if (!user) {
         return Promise.reject(new UnauthorizedError('Неправильная почта или пароль'));

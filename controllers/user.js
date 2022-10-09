@@ -29,18 +29,29 @@ module.exports.getUser = (req, res, next) => {
     });
 };
 
+const createTokenById = (id) => {
+  return jwt.sign({ _id: id }, JWT_SECRET, { expiresIn: '7d' });
+}
+
+const sendCookie = (res, { _id : id, email }) => {
+  const token = createTokenById(id)
+  return res
+    .cookie('token', token, {
+      maxAge: 604800000,
+      httpOnly: true,
+      sameSite: true,
+    })
+    .send({ email });
+
+}
+
 module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
 
-  return User.findUser(email, password)
+  return User.findUserByCredentials(email, password)
     .then((user) => {
-      const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' });
-      res
-        .cookie('token', token, {
-          maxAge: 3600 * 24 * 7,
-          httpOnly: true,
-        })
-        .send({ email });
+      console.log(user);
+      sendCookie(res, user)
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
@@ -72,7 +83,8 @@ module.exports.createUser = async (req, res, next) => {
       email,
       password: hash,
     });
-    res.status(201).send(newUser);
+    res.status(201)
+    sendCookie(res, newUser) // устанавливаю куки и при регистрации, чтобы не вводить логин
   } catch (err) {
     if (err.code === 11000) {
       next(new ConflictError('Пользователь с данным email уже существует'));

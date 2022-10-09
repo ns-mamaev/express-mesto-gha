@@ -33,19 +33,17 @@ const createTokenById = (id) => jwt.sign({ _id: id }, JWT_SECRET, { expiresIn: '
 
 const sendCookie = (res, { _id: id, email }) => {
   const token = createTokenById(id);
-  res.send({ id, token, email });
-  // return res
-  //   .cookie('token', token, {
-  //     maxAge: 604800000,
-  //     httpOnly: true,
-  //     sameSite: true,
-  //   })
-  //   .send({ email });
+  return res
+    .cookie('token', token, {
+      maxAge: 604800000,
+      httpOnly: true,
+      sameSite: true,
+    })
+    .send({ email });
 };
 
 module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
-
   return User.findUserByCredentials(email, password)
     .then((user) => {
       sendCookie(res, user);

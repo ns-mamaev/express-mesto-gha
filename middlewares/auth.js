@@ -1,18 +1,19 @@
 const jwt = require('jsonwebtoken');
 const UnauthorizedError = require('../errors/unauthorizedError');
-const { JWT_SECRET } = require('../utills/constants');
+const { getJWTSecretKey } = require('../utills/utills');
 
 module.exports = (req, _, next) => {
   const { token } = req.cookies;
   if (!token) {
-    throw new UnauthorizedError('Необходима авторизация тест1');
+    throw new UnauthorizedError('Необходима авторизация');
   }
   let payload;
 
   try {
-    payload = jwt.verify(token, JWT_SECRET);
+    const secretKey = getJWTSecretKey();
+    payload = jwt.verify(token, secretKey);
   } catch (err) {
-    throw new UnauthorizedError('Необходима авторизация тест2');
+    throw new UnauthorizedError('Необходима авторизация');
   }
   req.user = payload;
   next();

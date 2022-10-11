@@ -6,6 +6,13 @@ const usersRouter = require('./usersRouter');
 const auth = require('../middlewares/auth');
 const NotFoundError = require('../errors/notFoundError');
 
+// краш-тест сервера, удалить
+router.get('/crash-test', () => {
+  setTimeout(() => {
+    throw new Error('Я роняю сервер');
+  }, 0);
+});
+
 router.post('/signin', validateLoginData, login);
 router.post('/signup', validateRegisterData, createUser);
 

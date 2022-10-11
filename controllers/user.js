@@ -4,7 +4,7 @@ const User = require('../models/user');
 const NotFoundError = require('../errors/notFoundError');
 const ConflictError = require('../errors/conflictError');
 const BadRequestError = require('../errors/badRequestError');
-const { JWT_SECRET } = require('../utills/constants');
+const { getJWTSecretKey } = require('../utills/utills');
 
 module.exports.getUsers = (_, res, next) => {
   User.find({}).select('+email')
@@ -29,7 +29,10 @@ module.exports.getUser = (req, res, next) => {
     });
 };
 
-const createTokenById = (id) => jwt.sign({ _id: id }, JWT_SECRET, { expiresIn: '7d' });
+const createTokenById = (id) => {
+  const secretKey = getJWTSecretKey();
+  return jwt.sign({ _id: id }, secretKey, { expiresIn: '7d' });
+};
 
 const sendCookie = (res, { _id: id, email }) => {
   const token = createTokenById(id);
